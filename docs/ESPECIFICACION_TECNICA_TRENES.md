@@ -161,7 +161,7 @@ Página oficial: https://www.spaceappschallenge.org/2026/challenges/earth-system
 ## 3. Visión del producto
 
 ### 3.1 Nombre
-⚠️ **Lo decide el equipo.** Nombre de trabajo: **OutOfSpec**, con el lema *"Railways built for a climate that no longer exists."* Guarda el nombre y el lema en una sola constante (`APP_NAME`, `APP_TAGLINE`).
+⚠️ **Lo decide el equipo.** Nombre elegido: **Orbitrack**, con el lema *"Railways built for a climate that no longer exists."* Guarda el nombre y el lema en una sola constante (`APP_NAME`, `APP_TAGLINE`).
 
 ### 3.2 Problema
 - La vía de carril soldado se diseña y se mantiene para el clima de cada zona: Adif asigna temperaturas de neutralización por zonas, algunas de ~50 km, con valores actualizados hasta 2019 ✓ (Público, 2022).
@@ -822,7 +822,7 @@ Todo JSON lleva `provenance`. La página Methods la muestra.
 **Explorador**
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│ OutOfSpec   [Detective] [Railways] [My trip] [2050]   ✨ Ask…          │
+│ Orbitrack   [Detective] [Railways] [My trip] [2050]   ✨ Ask…          │
 ├──────────────┬────────────────────────────────────┬────────────────────┤
 │ VARIABLE     │                                    │ MADRID–SEVILLA HSL │
 │ ● Days ≥40°C │        MAP OF SPAIN                │ opened 1992        │

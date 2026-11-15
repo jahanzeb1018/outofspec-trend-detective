@@ -43,7 +43,7 @@ export async function siAsk(cfg: AiConfig, question: string, onStatus?: (s: stri
         if (kind === "routes") return JSON.stringify(routes.map((r) => ({ route_id: r.route_id, name: r.name })));
         return JSON.stringify([
           { id: "strong", note: "consolidated ballast, modern high-speed track" },
-          { id: "average", note: "typical track" },
+          { id: "average", note: "standard track (shown in the app as \"Standard\")" },
           { id: "weak", note: "recently tamped or poor ballast" },
           { id: "unknown", note: "use FRA distributions" },
         ]);

@@ -3,16 +3,16 @@
 > Fill every ⚠️ before submitting. Submit with hours of margin; test every link in a private window.
 
 ## 1. Project name
-**OutOfSpec**
+**Orbitrack**
 
 ## 2. High-level project summary
-OutOfSpec is a trend detective for Spain's 13,426-km railway, a network built for a climate that no longer exists. With 45 years of daily NASA POWER / MERRA-2 data for the 159 NASA grid squares the railway crosses, it shows month by month where the track was in trouble from heat, frost or downpours, and for every area tests whether the trend is real (Sen's slope, Mann-Kendall with the Hamed–Rao correction, t-test, false-discovery correction). It turns air temperature into rail temperature and an FRA-based buckling margin, runs a live 7-day heat watch, answers "what about my trip?" for any date from 1981 to 2100, and projects the network to 2050 with six NASA NEX-GDDP-CMIP6 climate models. We validated NASA's temperatures against 10 NOAA stations (r = 0.97) and the heat signal against 262 real buckled-track derailments.
+Orbitrack is a trend detective for Spain's 13,426-km railway, a network built for a climate that no longer exists. With 45 years of daily NASA POWER / MERRA-2 data for the 159 NASA grid squares the railway crosses, it shows month by month where the track was in trouble from heat, frost or downpours, and for every area tests whether the trend is real (Sen's slope, Mann-Kendall with the Hamed–Rao correction, t-test, false-discovery correction). It turns air temperature into rail temperature and an FRA-based buckling margin, runs a live 7-day heat watch, answers "what about my trip?" for any date from 1981 to 2100, and projects the network to 2050 with six NASA NEX-GDDP-CMIP6 climate models. We validated NASA's temperatures against 10 NOAA stations (r = 0.97) and the heat signal against 262 real buckled-track derailments.
 
 ## 3. Link to project demo
 ⚠️ 30-second video (YouTube/Drive, public) or ≤ 7 slides.
 
 ## 4. Link to final project
-* Live app: https://outofspec-trend-detective.vercel.app
+* Live app: https://orbitrack-app.vercel.app (previous link, still working: https://outofspec-trend-detective.vercel.app)
 * Code, data and docs: https://github.com/jahanzeb1018/outofspec-trend-detective
 
 ## 5. Detailed description (outline)

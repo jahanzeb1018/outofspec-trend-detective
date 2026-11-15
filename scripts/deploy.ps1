@@ -8,7 +8,7 @@ $ErrorActionPreference = "Continue"
 npm run build
 if ($LASTEXITCODE -ne 0) { throw "web build failed (exit $LASTEXITCODE)" }
 $ErrorActionPreference = "Stop"
-$dst = "$root\deploy\outofspec-trend-detective"
+$dst = "$root\deploy\orbitrack"
 New-Item -ItemType Directory -Force $dst | Out-Null
 Get-ChildItem $dst -Exclude ".vercel" | Remove-Item -Recurse -Force -Confirm:$false
 Copy-Item "$root\web\dist\*" $dst -Recurse

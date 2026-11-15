@@ -1,31 +1,59 @@
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { X } from "lucide-react";
+import { Microscope, X } from "lucide-react";
 import { useFocus, type ExpertTab } from "../state/focus";
-import { useCell, useSummary, useValidation } from "../data/load";
-import { IND, SCENARIO_SHORT, fmt, signed } from "../config";
+import { useCell, useJson, useSummary, useValidation } from "../data/load";
+import { IND, fmt, signed } from "../config";
 import { TimeSeriesChart } from "./charts/TimeSeriesChart";
 import { Seg, Loading } from "./ui";
-import { dtAllow, PRESET_FP } from "../model/buckling";
+import type { WatchData } from "../model/watch";
 
-const TABS: { id: ExpertTab; label: string }[] = [
-  { id: "stats", label: "Statistics" },
-  { id: "model", label: "Track model" },
-  { id: "future", label: "Projections" },
-  { id: "validation", label: "Validation" },
-  { id: "data", label: "Data" },
+/** Expert details: the technical numbers behind what the page shows for one place, each with a plain explanation.
+ *  Opened from an "Expert details" button next to the place (overview panel, heat watch, my trip) or from the footer. */
+const TABS: { id: ExpertTab; label: string; intro: string }[] = [
+  { id: "stats", label: "Trend", intro: "Is the change real? The statistical tests behind the trend." },
+  { id: "model", label: "Track", intro: "How hot the rail gets, and how much margin the track has before it buckles." },
+  { id: "future", label: "Future", intro: "What six NASA climate models expect for this area." },
+  { id: "validation", label: "Checks", intro: "How we checked NASA's numbers against the real world." },
+  { id: "data", label: "Data", intro: "The files behind the app, and the full methods." },
 ];
+const SCEN_PLAIN: Record<string, string> = { ssp245: "intermediate emissions", ssp585: "high emissions" };
+const PER_PLAIN: Record<string, string> = { "2041-2060": "2050", "2081-2100": "2090" };
+
+/** The button that opens Expert details for the place the page is showing (optionally on the indicator it shows). */
+export function ExpertButton({ tab, indicator, children = "Expert details" }: { tab?: ExpertTab; indicator?: string; children?: ReactNode }) {
+  const { focus, setFocus, openExpert } = useFocus();
+  return (
+    <button
+      type="button"
+      className="btn"
+      onClick={() => {
+        if (indicator && indicator !== focus.indicator) setFocus({ ...focus, indicator });
+        openExpert(tab);
+      }}
+    >
+      <Microscope size={14} /> {children}
+    </button>
+  );
+}
 
 function Row({ k, v, plain }: { k: string; v: string; plain: string }) {
   return (
     <div className="kv">
-      <div>
-        <div className="k">{k}</div>
-        <div className="v">{v}</div>
+      <div className="kv-top">
+        <span className="k">{k}</span>
+        <span className="v">{v}</span>
       </div>
       <p>{plain}</p>
     </div>
   );
+}
+
+/** "37.50_-5.625" → "37.5° N, 5.6° W" */
+function coords(cellId: string) {
+  const [la, lo] = cellId.split("_").map(Number);
+  if (!Number.isFinite(la) || !Number.isFinite(lo)) return cellId;
+  return `${fmt(Math.abs(la), 1)}° ${la >= 0 ? "N" : "S"}, ${fmt(Math.abs(lo), 1)}° ${lo >= 0 ? "E" : "W"}`;
 }
 
 export function ExpertDrawer() {
@@ -33,6 +61,7 @@ export function ExpertDrawer() {
   const { data: cell } = useCell(expert.open ? focus.cellId : null);
   const { data: summary } = useSummary();
   const { data: val } = useValidation();
+  const { data: wd } = useJson<WatchData>(expert.open ? "watch.json" : null);
   useEffect(() => {
     if (!expert.open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && closeExpert();
@@ -45,19 +74,32 @@ export function ExpertDrawer() {
   const t = cell?.trends[ind];
   const cs = focus.cellId && summary ? summary.cells[focus.cellId]?.[ind] : null;
   const nTests = summary ? Object.keys(summary.cells).length : 159;
-  const decPlain = (v: number) => (Math.abs(v) < 0.05 ? "practically no change" : `${v > 0 ? "about" : "about"} ${fmt(Math.abs(v), 1)} ${meta.unit.replace("/yr", "")} ${v > 0 ? "more" : "fewer"} every ten years`);
+  const unit = meta.unit.replace("/yr", "").trim();
+  const isTemp = unit.includes("°C");
+  const decPlain = (v: number) => (Math.abs(v) < 0.05 ? "practically no change" : `about ${fmt(Math.abs(v), 1)} ${unit} ${v > 0 ? (isTemp ? "higher" : "more") : isTemp ? "lower" : "fewer"} every ten years`);
+  const real = t ? !t.rare && t.p_mk_hr < 0.05 : false;
+  const tab = TABS.find((x) => x.id === expert.tab) ?? TABS[0];
+  const laid = wd?.tn_typical ?? null;
+  const limit = (k: "weak" | "average" | "strong") => (wd && laid !== null ? Math.round(laid + wd.allow[k]) : null);
 
   return (
     <>
       <div className="scrim" onClick={closeExpert} role="presentation" />
-      <aside className="drawer" role="dialog" aria-label="Expert view">
+      <aside className="drawer" role="dialog" aria-label={`Expert details · ${focus.label ?? "Spain"}`}>
         <div className="head">
-          <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start", flexWrap: "nowrap" }}>
             <div>
-              <div className="eyebrow">EXPERT VIEW · {focus.label ?? "Spain"} {focus.cellId ? `· NASA cell ${focus.cellId}` : ""}</div>
-              <h2 style={{ fontSize: 28, marginTop: 6 }}>How we know</h2>
+              <div className="eyebrow">
+                <Microscope size={12} style={{ verticalAlign: -1, marginRight: 6 }} />
+                EXPERT DETAILS
+              </div>
+              <h2 style={{ fontSize: 28, marginTop: 6 }}>{focus.label ?? "Spain"}</h2>
+              <p className="small ink2" style={{ marginTop: 4 }}>
+                The technical numbers behind what you see, each explained in plain words.
+                {focus.cellId && <span className="muted"> NASA square at {coords(focus.cellId)}.</span>}
+              </p>
             </div>
-            <button className="btn" onClick={closeExpert} aria-label="Close expert view">
+            <button className="btn" onClick={closeExpert} aria-label="Close expert details">
               <X size={16} />
             </button>
           </div>
@@ -66,13 +108,22 @@ export function ExpertDrawer() {
           </div>
         </div>
         <div className="body">
+          <p className="xp-intro">{tab.intro}</p>
+
           {expert.tab === "stats" &&
             (!cell || !t ? (
               <Loading what="the statistics" />
             ) : (
-              <div className="stack" style={{ gap: 16 }}>
-                <div className="small ink2">
-                  {meta.label} · {cell.years[0]}–{cell.years[cell.years.length - 1]} · NASA POWER (MERRA-2)
+              <div className="stack" style={{ gap: 14 }}>
+                <div className={`xp-verdict ${t.rare ? "rare" : real ? "yes" : "no"}`}>
+                  <b>{t.rare ? "Too rare to test" : real ? "Real trend" : "Not significant yet"}</b>
+                  <span>
+                    {t.rare
+                      ? `Too few such days here since ${cell.years[0]} to measure a trend.`
+                      : real
+                        ? `${meta.label}: ${decPlain(t.sen_slope * 10)} since ${cell.years[0]}.`
+                        : `${meta.label}: ${decPlain(t.sen_slope * 10)}, but chance could still explain it.`}
+                  </span>
                 </div>
                 <TimeSeriesChart
                   years={cell.years}
@@ -80,63 +131,100 @@ export function ExpertDrawer() {
                   unit={meta.unit}
                   label={meta.label}
                   decimals={meta.decimals}
-                  height={220}
+                  height={200}
                   trend={t.rare ? null : { slope: t.sen_slope, lo: t.ci_low, hi: t.ci_high, pivotX: cell.years[0] + (t.n - 1) / 2, pivotY: t.sen_intercept + t.sen_slope * ((t.n - 1) / 2) }}
                   future={cs?.fut ?? null}
                 />
                 <div>
-                  <Row k="Sen's slope" v={`${signed(t.sen_slope * 10, 2)} / decade`} plain={`${decPlain(t.sen_slope * 10)} — a robust rate that one extreme year cannot drag around.`} />
-                  <Row k="95% confidence interval" v={`${signed(t.ci_low * 10, 2)} to ${signed(t.ci_high * 10, 2)}`} plain={t.ci_low > 0 || t.ci_high < 0 ? "The whole range points the same way: the direction of change is clear." : "The range includes zero: the direction is not yet certain."} />
-                  <Row k="Mann-Kendall p (Hamed–Rao)" v={fmt(t.p_mk_hr, 4)} plain={t.p_mk_hr < 0.001 ? "A steady change like this would appear by chance less than once in 1,000 tries." : t.p_mk_hr < 0.05 ? `Chance alone would give this less than ${Math.ceil(t.p_mk_hr * 100)} times in 100.` : "Chance could easily produce a pattern like this — not significant yet."} />
-                  <Row k={`FDR q · ${nTests} cells`} v={t.q !== null ? fmt(t.q, 4) : "–"} plain={t.sig_fdr ? `Still significant after allowing for testing ${nTests} places at once.` : `Not significant once we allow for testing ${nTests} places at once.`} />
-                  <Row k="OLS slope · t-test p" v={`${signed(t.ols_slope * 10, 2)} · ${fmt(t.p_ols, 4)}`} plain="The classic straight-line test, shown for reference." />
-                  <Row k="Years (n)" v={String(t.n)} plain={t.years_needed ? `At this rate and noise, about ${t.years_needed} more years would be needed to detect it (approximate).` : "Complete years of NASA POWER daily data."} />
+                  <Row k="Rate of change (Sen's slope)" v={`${signed(t.sen_slope * 10, 2)} per decade`} plain={`${decPlain(t.sen_slope * 10)}. A robust rate: one extreme year cannot drag it around.`} />
+                  <Row k="Likely range (95%)" v={`${signed(t.ci_low * 10, 2)} to ${signed(t.ci_high * 10, 2)}`} plain={t.ci_low > 0 || t.ci_high < 0 ? "The whole range points the same way, so the direction of change is clear." : "The range includes zero, so the direction is not certain yet."} />
+                  <Row k="Could it be chance? (Mann-Kendall p)" v={fmt(t.p_mk_hr, 4)} plain={t.p_mk_hr < 0.001 ? "A steady change like this would appear by chance less than once in 1,000 tries." : t.p_mk_hr < 0.05 ? `Chance alone would give this less than ${Math.ceil(t.p_mk_hr * 100)} times in 100.` : "Chance could easily produce a pattern like this."} />
+                  <Row k={`Checked across all ${nTests} squares (FDR q)`} v={t.q !== null ? fmt(t.q, 4) : "–"} plain={t.sig_fdr ? `Still significant after allowing for testing ${nTests} places at once.` : `Not significant once we allow for testing ${nTests} places at once.`} />
+                  <Row k="Classic straight-line test (t-test p)" v={`${signed(t.ols_slope * 10, 2)} · p ${fmt(t.p_ols, 4)}`} plain="The textbook test, shown for reference." />
+                  <Row k="Years of data" v={String(t.n)} plain={t.years_needed ? `At this rate and with this much year-to-year noise, about ${t.years_needed} more years would be needed to be sure.` : "Complete years of NASA POWER daily data."} />
                 </div>
               </div>
             ))}
 
           {expert.tab === "model" && (
-            <div className="stack" style={{ gap: 4 }}>
-              <p className="small ink2">Buckling safety margin from Kish &amp; Samavedam (2013), US Federal Railroad Administration, DOT/FRA/ORD-13/16. Rail temperature from NASA air temperature, sunshine and wind.</p>
-              <Row k="Rail temperature" v="air + 17 °C × k" plain={`k scales with NASA sunshine and wind (anchored on hot days: ${fmt(summary?.meta.g_ref, 0)} W/m², ${fmt(summary?.meta.v_ref, 2)} m/s). Uncertainty ±4 °C.`} />
-              <Row k="Allowable rise (FRA)" v={`${fmt(dtAllow(PRESET_FP.weak!), 1)} / ${fmt(dtAllow(PRESET_FP.average!), 1)} / ${fmt(dtAllow(PRESET_FP.strong!), 1)} °C`} plain="How far above its stress-free temperature the rail can go: weak (just repaired) / average / strong track." />
+            <div>
+              <Row k="Rail temperature" v="air + up to 25 °C" plain="With full sun and a light breeze the rail runs about 17 °C above the air; more when calm, less with clouds or wind. Uncertainty about ±4 °C." />
+              <Row
+                k="Buckling limits"
+                v={limit("weak") !== null ? `${limit("weak")} / ${limit("average")} / ${limit("strong")} °C` : "–"}
+                plain={`Rail temperature at which the track can bend sideways: just-repaired / standard / modern track. Rails are laid stress-free at about ${laid !== null ? Math.round(laid) : 27} °C.`}
+              />
               {cell && (
                 <>
-                  <Row k="Margin now → 2041–60 (average)" v={`${signed(cell.buckling.average?.recent?.bsm_med, 1)} → ${signed(cell.buckling.average?.["ssp245|2041-2060"]?.bsm_med, 1)} °C`} plain="Typical track on the hottest day of a normal year, today and with intermediate emissions." />
-                  <Row k="Days without margin (weak)" v={`${fmt(cell.buckling.weak?.recent?.days_mean, 1)} → ${fmt(cell.buckling.weak?.["ssp245|2041-2060"]?.days_mean, 1)} / yr`} plain="If the track had just been repaired: warm-season days with no thermal margin left." />
-                  <Row k="Neutral-temperature window" v={`heat ${signed(cell.rail.windows["ssp245|2041-2060"]?.heat?.med, 1)} · cold ${signed(cell.rail.windows["ssp245|2041-2060"]?.cold?.med, 1)} °C`} plain="Raising the rail's stress-free temperature by the heat number keeps today's margin; winter cold only allows the cold number." />
+                  <Row
+                    k="Margin on the hottest day · standard track"
+                    v={`${signed(cell.buckling.average?.recent?.bsm_med, 1)} → ${signed(cell.buckling.average?.["ssp245|2041-2060"]?.bsm_med, 1)} °C`}
+                    plain="Degrees left before buckling on the hottest day of a normal year: today → around 2050 (intermediate emissions). Below zero means no margin."
+                  />
+                  <Row
+                    k="Days with no margin · just-repaired track"
+                    v={`${fmt(cell.buckling.weak?.recent?.days_mean, 1)} → ${fmt(cell.buckling.weak?.["ssp245|2041-2060"]?.days_mean, 1)} a year`}
+                    plain="Warm days a year when freshly repaired track would have no margin left: today → around 2050."
+                  />
+                  <Row
+                    k="Lay the rail warmer by 2050"
+                    v={`${signed(cell.rail.windows["ssp245|2041-2060"]?.heat?.med, 1)} °C (winter allows ${signed(cell.rail.windows["ssp245|2041-2060"]?.cold?.med, 1)})`}
+                    plain="To keep today's margin, rails would need to be laid this much warmer; colder winters limit how far that can go."
+                  />
                 </>
               )}
-              <p className="note" style={{ marginTop: 10 }}>Monte Carlo over neutral temperature, lateral resistance and rail-model error (CWR-RISK “Case A” distributions). US track parameters; a screening model, not a safety assessment.</p>
+              <p className="note" style={{ marginTop: 12 }}>
+                Method: US Federal Railroad Administration (Kish &amp; Samavedam 2013), with thousands of random combinations of track condition and model error (Monte Carlo). A screening model, not a safety assessment.
+              </p>
             </div>
           )}
 
           {expert.tab === "future" && (
-            <div className="stack" style={{ gap: 4 }}>
-              <p className="small ink2">NASA NEX-GDDP-CMIP6 · {summary?.models.length ?? 0} models ({summary?.models.join(", ")}) · monthly change added to observed 1995–2014 days (delta method).</p>
-              {cs?.fut &&
+            <div>
+              <div className="small ink2" style={{ marginBottom: 6 }}>
+                <b>{meta.label}</b> · reference 1995–2014: {cs ? `${fmt(cs.ref, meta.decimals)} ${meta.unit}` : "–"}
+              </div>
+              {cs?.fut ? (
                 Object.entries(cs.fut).flatMap(([s, per]) =>
-                  Object.entries(per).map(([p, e]) => <Row key={s + p} k={`${p} · ${SCENARIO_SHORT[s]}`} v={`${fmt(e[0], meta.decimals)} ${meta.unit}`} plain={`Median of the models; range ${fmt(e[1], meta.decimals)}–${fmt(e[2], meta.decimals)}. Reference 1995–2014: ${fmt(cs.ref, meta.decimals)}.`} />),
-                )}
+                  Object.entries(per).map(([p, e]) => (
+                    <Row
+                      key={s + p}
+                      k={`${PER_PLAIN[p] ?? p} (${p.replace("-", "–")}) · ${SCEN_PLAIN[s] ?? s}`}
+                      v={`${fmt(e[0], meta.decimals)} ${meta.unit}`}
+                      plain={`Middle of the ${summary?.models.length ?? 6} models; they range from ${fmt(e[1], meta.decimals)} to ${fmt(e[2], meta.decimals)}.`}
+                    />
+                  )),
+                )
+              ) : (
+                <Loading what="the projections" />
+              )}
+              <p className="note" style={{ marginTop: 12 }}>
+                NASA NEX-GDDP-CMIP6{summary?.models.length ? ` (${summary.models.join(", ")})` : ""}: each model's monthly warming is added to real NASA days from 1995–2014 (delta method).
+              </p>
             </div>
           )}
 
-          {expert.tab === "validation" && (
-            <div className="stack" style={{ gap: 4 }}>
-              {val ? (
-                <>
-                  <Row k="NOAA stations · daily r" v={`${fmt(Math.min(...val.stations.filter((s) => s.years >= 20).map((s) => s.daily_r)), 2)}–${fmt(Math.max(...val.stations.map((s) => s.daily_r)), 2)}`} plain={`${val.stations.length} long-record weather stations (GHCN-Daily) vs NASA POWER at the same point: the day-to-day weather matches closely.`} />
-                  {val.fra_t109 && (
-                    <Row k="US buckled-track derailments" v={`${val.fra_t109.with_coords} · ${fmt(100 * val.fra_t109.share_above_p90, 0)}% > P90`} plain="Real FRA derailments (cause T109): 40% happened on days above the local 90th percentile of NASA heat — four times what chance would give." />
-                  )}
-                  <Row k="Models vs observations" v="1981–2014" plain="Climate-model trends checked against NASA MERRA-2 cell by cell (chart in Methods)." />
-                  <Row k="NASA Giovanni" v="pending" plain="Cross-check workflow ready; needs a free Earthdata login." />
-                </>
-              ) : (
-                <Loading />
-              )}
-            </div>
-          )}
+          {expert.tab === "validation" &&
+            (val ? (
+              <div>
+                <Row
+                  k="Weather stations (NOAA) · daily agreement"
+                  v={`r ${fmt(Math.min(...val.stations.filter((s) => s.years >= 20).map((s) => s.daily_r)), 2)}–${fmt(Math.max(...val.stations.map((s) => s.daily_r)), 2)}`}
+                  plain={`${val.stations.length} long-record stations in Spain against NASA at the same spot: the day-to-day temperature matches closely (1 would be perfect).`}
+                />
+                {val.fra_t109 && (
+                  <Row
+                    k="Real track buckles (US)"
+                    v={`${val.fra_t109.with_coords} · ${fmt(100 * val.fra_t109.share_above_p90, 0)}% on the hottest days`}
+                    plain={`${fmt(100 * val.fra_t109.share_above_p90, 0)}% of real US buckled-track derailments happened on days hotter than 9 in 10 summer days there; chance alone would give 10%.`}
+                  />
+                )}
+                <Row k="Climate models vs observations" v="1981–2014" plain="Each model's past trend checked against NASA's record, square by square (chart in Methods)." />
+                <Row k="NASA Giovanni" v="pending" plain="Cross-check ready; it needs a free NASA Earthdata login." />
+              </div>
+            ) : (
+              <Loading />
+            ))}
 
           {expert.tab === "data" && (
             <div className="stack" style={{ gap: 12 }}>
@@ -148,11 +236,11 @@ export function ExpertDrawer() {
               <div className="row">
                 {focus.cellId && (
                   <a className="btn" href={`./data/cells/${focus.cellId}.json`} target="_blank" rel="noreferrer">
-                    This cell (JSON)
+                    This square (JSON)
                   </a>
                 )}
                 <a className="btn" href="./data/summary.json" target="_blank" rel="noreferrer">
-                  All cells (JSON)
+                  All squares (JSON)
                 </a>
                 <a className="btn" href="./data/segments.geojson" target="_blank" rel="noreferrer">
                   Railway sections (GeoJSON)

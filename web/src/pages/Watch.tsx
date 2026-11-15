@@ -9,6 +9,7 @@ import { useWatch, worstByCell } from "../data/forecast";
 import { isAlert, isWarmSide, plainStatus, STATUS_COLOR, STATUS_LABEL, STATUS_RANK, type Status, type WatchData } from "../model/watch";
 import { useFocus } from "../state/focus";
 import { useAssistant } from "../ai/AssistantContext";
+import { ExpertButton } from "../components/ExpertDrawer";
 
 type CellsFC = GeoJSON.FeatureCollection<GeoJSON.Polygon, { c: string; km: number; lat: number; lon: number; place: string }>;
 interface Replays {
@@ -254,6 +255,7 @@ export function WatchPage() {
               )}
             </div>
             <p className="wt-say">{plainStatus(fc.status, fc)}</p>
+            <div className="row" style={{ gap: 8 }}>
             <button
               className="btn"
               data-tour="watch-brief"
@@ -268,6 +270,8 @@ export function WatchPage() {
             >
               <Sparkles size={14} /> Explain it
             </button>
+            <ExpertButton tab="model" />
+            </div>
           </>
         ) : (
           <p className="small muted">{mode === "forecast" && !watch.data ? "Loading the forecast…" : "Click a line on the map."}</p>

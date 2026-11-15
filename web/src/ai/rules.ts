@@ -63,7 +63,7 @@ export function describeTrackRules(text: string): { preset: Preset; tn?: number;
     why.push("consolidated ballast / modern high-speed track → Strong");
   } else if (/(wood|madera|conventional|convencional|average|normal|media)/.test(t)) {
     preset = "average";
-    why.push("typical conventional track → Average");
+    why.push("standard conventional track → Average");
   }
   const range = t.match(/(\d{1,2}(?:[.,]\d)?)\s*(?:-|–|to|a|y|and)\s*(\d{1,2}(?:[.,]\d)?)\s*(?:°|º|c|grados|degrees)?/);
   const single = t.match(/(?:neutral|neutra|nt)[^0-9]{0,25}(\d{1,2}(?:[.,]\d)?)/);

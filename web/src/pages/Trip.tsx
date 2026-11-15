@@ -9,6 +9,7 @@ import { useWatch } from "../data/forecast";
 import type { WatchData } from "../model/watch";
 import { useFocus } from "../state/focus";
 import { useWidth } from "../components/charts/useWidth";
+import { ExpertButton } from "../components/ExpertDrawer";
 
 /** One date, any year. Past (to the last NASA POWER day): what was measured that day. Next 7 days: the forecast.
  *  Later: the climate of that date in that year, blended between three anchors (pipeline/trip_data.py). */
@@ -138,7 +139,7 @@ export function TripPage() {
   const hot = hotP ? (heatV(hotP) as number) : null;
   const cold = coldP ? (coldV(coldP) as number) : null;
   const wet = wetP ? (wetP.pr as number) : null;
-  const limits = wd ? { repaired: wd.tn_typical + wd.allow.weak, typical: wd.tn_typical + wd.allow.average, modern: wd.tn_typical + wd.allow.strong } : { repaired: 60, typical: 74, modern: 82 };
+  const limits = wd ? { repaired: wd.tn_typical + wd.allow.weak, standard: wd.tn_typical + wd.allow.average, modern: wd.tn_typical + wd.allow.strong } : { repaired: 60, standard: 74, modern: 82 };
   const lv = {
     heat: (hot === null ? 0 : hot >= limits.repaired + 6 ? 3 : hot >= limits.repaired ? 2 : hot >= limits.repaired - 10 ? 1 : 0) as Level,
     cold: (cold === null ? 0 : cold <= -15 ? 3 : cold <= -10 ? 2 : cold <= -5 ? 1 : 0) as Level,
@@ -207,7 +208,7 @@ export function TripPage() {
     hz === "heat"
       ? [
           { v: limits.repaired, label: `just repaired ${Math.round(limits.repaired)}°` },
-          { v: limits.typical, label: `typical track ${Math.round(limits.typical)}°` },
+          { v: limits.standard, label: `standard track ${Math.round(limits.standard)}°` },
         ]
       : hz === "cold"
         ? [
@@ -220,6 +221,19 @@ export function TripPage() {
           ];
   const what = hz === "heat" ? "Rail temperature" : hz === "cold" ? "Coldest temperature" : "Rain";
   const unit = hz === "rain" ? "mm" : "°C";
+  // Legend: what the solid and the dashed line mean (climate dates: median and 1-in-10, pipeline/trip_data.py).
+  const legend: { dashed: boolean; name: string }[] =
+    climate && hz !== "rain"
+      ? hz === "cold"
+        ? [
+            { dashed: false, name: "Typical night" },
+            { dashed: true, name: "Cold night" },
+          ]
+        : [
+            { dashed: false, name: "Typical day" },
+            { dashed: true, name: "Hot day" },
+          ]
+      : [{ dashed: false, name: mode === "forecast" ? "Forecast" : "Measured" }];
 
   const chips: { h: Hazard; icon: ReactNode; text: string }[] = [
     { h: "heat", icon: <Flame size={14} />, text: hot === null ? "–" : `${r0(hot)}°` },
@@ -264,9 +278,7 @@ export function TripPage() {
             <>
               <div className="card tp-chart" data-tour="trip-strip">
                 <div className="row" style={{ justifyContent: "space-between", gap: 10 }}>
-                  <span className="small ink2">
-                    {what} along the line{climate && hz !== "rain" ? (hz === "cold" ? " · dashed: a cold night" : " · dashed: a hot day") : ""}
-                  </span>
+                  <span className="small ink2">{what} along the line</span>
                   <div className="zone-tabs tp-tabs" role="tablist" aria-label="What to show">
                     {chips.map((c) => (
                       <button key={c.h} role="tab" aria-selected={hz === c.h} onClick={() => setPick(c.h)} style={hz === c.h ? { borderColor: HZ_COLOR[c.h], color: HZ_COLOR[c.h] } : undefined}>
@@ -274,6 +286,16 @@ export function TripPage() {
                       </button>
                     ))}
                   </div>
+                </div>
+                <div className="tp-legend">
+                  {legend.map((l) => (
+                    <div key={l.name}>
+                      <svg width="24" height="8" viewBox="0 0 24 8" aria-hidden="true">
+                        <line x1={0} x2={24} y1={4} y2={4} stroke={HZ_COLOR[hz]} strokeWidth={l.dashed ? 2 : 3} strokeDasharray={l.dashed ? "5 4" : undefined} />
+                      </svg>
+                      <span>{l.name}</span>
+                    </div>
+                  ))}
                 </div>
                 <div ref={chartRef}>
                 <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: "block", marginTop: 12 }} role="img" aria-label={`${what} along ${route.name}`}>
@@ -333,7 +355,7 @@ export function TripPage() {
                       {(
                         [
                           ["Just repaired", limits.repaired],
-                          ["Typical track", limits.typical],
+                          ["Standard track", limits.standard],
                           ["Modern track", limits.modern],
                         ] as [string, number][]
                       ).map(([name, lim]) => {
@@ -383,6 +405,9 @@ export function TripPage() {
                   <p className="tiny muted" style={{ marginTop: 12 }}>
                     Estimate, not an operational alert.
                   </p>
+                  <div style={{ marginTop: 14 }}>
+                    <ExpertButton tab="model">Expert details{where ? ` · ${where}` : ""}</ExpertButton>
+                  </div>
                 </div>
               </div>
             </>

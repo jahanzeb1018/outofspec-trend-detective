@@ -1,7 +1,7 @@
-# OutOfSpec · Trend Detective
+# Orbitrack · Trend Detective
 
 > NASA Space Apps Challenge 2026 · **“Be An Earth System Trend Detective!”**
-> *Railways built for a climate that no longer exists.* (Working name: the project name lives in `web/src/config.ts`.)
+> *Railways built for a climate that no longer exists.* (The name and tagline live in `web/src/config.ts`; the logo in `web/src/components/Logo.tsx` and `web/public/favicon.svg`.)
 
 A data-detective tool that finds **what is changing, where, how fast and whether it is real** in NASA Earth data, for any place on Earth. Spain's railway network is the flagship case: heat days rising in the south, frost days falling in the north, what that means for the track (an FRA-based buckling safety margin), for your trip, and for 2050 and 2100.
 
@@ -19,7 +19,7 @@ A data-detective tool that finds **what is changing, where, how fast and whether
 | **Manager mode** (`/manager`) | Upload your own track data (CSV), computed 100% in the browser, export results | “Ready to implement” |
 | **Assistant** (top bar) | “Ask the detective”, “Explain this”, “Describe your track”: Claude with tools over a closed catalog, or rule-based without a key. Labelled *SI-assisted* | Optional SI suggestion |
 
-Design: the light design is live at https://outofspec-trend-detective.vercel.app. An alternative dark, story-based design was tried and set aside; its source is kept in `versions/v2-dark/` (copy its `src/` into `web/` to try it again).
+Design: the light design is live at https://orbitrack-app.vercel.app (the old link https://outofspec-trend-detective.vercel.app still works). An alternative dark, story-based design was tried and set aside; its source is kept in `versions/v2-dark/` (copy its `src/` into `web/` to try it again).
 
 ## Quick start
 
@@ -82,7 +82,7 @@ Model: `claude-opus-5-5` with server-side fallbacks; the assistant can only prop
 
 ## Deploy
 
-Live demo: https://outofspec-trend-detective.vercel.app — `scripts/deploy.ps1` (static build + `/api/claude` and `/api/forecast` functions). `.github/workflows/pages.yml` can also publish `web/dist` to GitHub Pages (the assistant then runs rule-based and the watch calls Open-Meteo directly). Test the public link in a private window.
+Live demo: https://orbitrack-app.vercel.app (also https://outofspec-trend-detective.vercel.app) — `scripts/deploy.ps1` (static build + `/api/claude` and `/api/forecast` functions). `.github/workflows/pages.yml` can also publish `web/dist` to GitHub Pages (the assistant then runs rule-based and the watch calls Open-Meteo directly). Test the public link in a private window.
 
 ## Licences
 
@@ -90,6 +90,5 @@ Code: MIT (`LICENSE`). Data: see `DATA_LICENSES.md` (NASA open data, OpenStreetM
 
 ## Team to-do before submitting
 
-* Decide the project name (`web/src/config.ts`, `index.html`, this README).
 * Optional: Giovanni cross-check (Earthdata login), deploy the AI proxy.
 * Complete `SUBMISSION.md` (form texts, honest SI disclosure) and record the ≤ 30 s video.

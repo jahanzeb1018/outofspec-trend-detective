@@ -6,12 +6,14 @@ const MAX_TOKENS = 4000;
 const MAX_BODY = 200000;
 const PER_MINUTE = 15;
 const hits = new Map();
+// Production domains (the old name keeps working for links already shared). Not "orbitrack.vercel.app": not ours.
+const SITE_HOSTS = new Set(["orbitrack-app.vercel.app", "outofspec-trend-detective.vercel.app"]);
 
 function originAllowed(origin, host) {
   if (!origin) return true; // same-origin requests from some browsers omit Origin
   try {
     const u = new URL(origin);
-    return u.host === host || u.hostname === "localhost" || u.hostname === "127.0.0.1" || /^outofspec-trend-detective[a-z0-9-]*\.vercel\.app$/.test(u.hostname);
+    return u.host === host || u.hostname === "localhost" || u.hostname === "127.0.0.1" || SITE_HOSTS.has(u.hostname) || /^(orbitrack|outofspec-trend-detective)-[a-z0-9]+-[a-z0-9-]+\.vercel\.app$/.test(u.hostname);
   } catch {
     return false;
   }

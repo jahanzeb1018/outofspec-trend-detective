@@ -1,5 +1,5 @@
 // Single place for the project name (team decision pending) and indicator metadata.
-export const APP_NAME = "OutOfSpec";
+export const APP_NAME = "Orbitrack";
 export const APP_TAGLINE = "Railways built for a climate that no longer exists.";
 export const DATA_BASE = "./data";
 

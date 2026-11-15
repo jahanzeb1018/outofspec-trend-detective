@@ -13,7 +13,7 @@ const SUN = { cloudy: { f: 0.25, label: "Cloudy" }, hazy: { f: 0.6, label: "Hazy
 const WIND = { calm: { v: 0.5, label: "Calm" }, breeze: { v: 2.07, label: "Breeze" }, windy: { v: 6, label: "Windy" } } as const;
 type Sun = keyof typeof SUN;
 type Wind = keyof typeof WIND;
-type Track = "repaired" | "typical" | "modern";
+type Track = "repaired" | "standard" | "modern";
 type Laid = "std" | "warm";
 const h = (v: number) => 5.7 + 3.8 * v;
 const TENSION_KN_PER_C = 18.56;
@@ -56,12 +56,13 @@ export function LabPage() {
   const [air, setAir] = useState(num(sp.get("air"), 40, 0, 48));
   const [sun, setSun] = useState<Sun>("full");
   const [wind, setWind] = useState<Wind>("breeze");
-  const [track, setTrack] = useState<Track>((["repaired", "typical", "modern"] as Track[]).find((t) => t === sp.get("track")) ?? "repaired");
+  const trackParam = sp.get("track") === "typical" ? "standard" : sp.get("track"); // old links used "typical"
+  const [track, setTrack] = useState<Track>((["repaired", "standard", "modern"] as Track[]).find((t) => t === trackParam) ?? "repaired");
   const [night, setNight] = useState(num(sp.get("night"), -8, -20, 10));
   const [laid, setLaid] = useState<Laid>("std");
 
   const tnT = wd?.tn_typical ?? 26.67;
-  const limits: Record<Track, number> = { repaired: tnT + (wd?.allow.weak ?? 33.33), typical: tnT + (wd?.allow.average ?? 47.78), modern: tnT + (wd?.allow.strong ?? 55.56) };
+  const limits: Record<Track, number> = { repaired: tnT + (wd?.allow.weak ?? 33.33), standard: tnT + (wd?.allow.average ?? 47.78), modern: tnT + (wd?.allow.strong ?? 55.56) };
   const vRef = wd?.v_ref ?? 2.07;
   const sunF = SUN[sun].f;
   const windF = h(vRef) / h(WIND[wind].v);
@@ -167,7 +168,7 @@ export function LabPage() {
 
         <div className="card lab-out">
           <div className="row" style={{ justifyContent: "space-between", alignItems: "baseline" }}>
-            <span className="small ink2">{mode === "heat" ? `${track === "repaired" ? "Just-repaired" : track === "typical" ? "Typical" : "Modern"} track` : laid === "warm" ? "Rail laid warm" : "Standard rail"}</span>
+            <span className="small ink2">{mode === "heat" ? `${track === "repaired" ? "Just-repaired" : track === "standard" ? "Standard" : "Modern"} track` : laid === "warm" ? "Rail laid warm" : "Standard rail"}</span>
             <span className="dlevel" style={{ color: lv.c, background: lv.bg }}>
               {lv.t}
             </span>
@@ -189,7 +190,7 @@ export function LabPage() {
               ? (
                   [
                     ["repaired", "Just repaired"],
-                    ["typical", "Typical"],
+                    ["standard", "Standard"],
                     ["modern", "Modern"],
                   ] as [Track, string][]
                 ).map(([k, name]) => {

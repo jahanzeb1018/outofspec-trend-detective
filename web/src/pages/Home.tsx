@@ -11,6 +11,7 @@ import type { WatchData } from "../model/watch";
 import { useAssistant } from "../ai/AssistantContext";
 import { useFocus } from "../state/focus";
 import { FutureSection } from "./HomeFuture";
+import { ExpertButton } from "../components/ExpertDrawer";
 
 type CellsFC = GeoJSON.FeatureCollection<GeoJSON.Polygon, { c: string; km: number; place: string; lat: number; lon: number }>;
 type Series = (number | null)[];
@@ -397,7 +398,7 @@ function Zone({ seg, cid, place, km, wd, monthly, f, origin, onClose }: { seg: S
   if (hz === "heat") {
     const scales: Scale[] = [
       { key: "weak", label: "Just repaired", sub: `holds ~${Math.round(wd.tn_typical + wd.allow.weak)} °C`, cuts: [wd.tn_typical + wd.allow.weak - 10, wd.tn_typical + wd.allow.weak, wd.tn_typical + wd.allow.weak + 6], up: true },
-      { key: "average", label: "Typical", sub: `holds ~${Math.round(wd.tn_typical + wd.allow.average)} °C`, cuts: [wd.tn_typical + wd.allow.average - 10, wd.tn_typical + wd.allow.average, wd.tn_typical + wd.allow.average + 6], up: true },
+      { key: "average", label: "Standard", sub: `holds ~${Math.round(wd.tn_typical + wd.allow.average)} °C`, cuts: [wd.tn_typical + wd.allow.average - 10, wd.tn_typical + wd.allow.average, wd.tn_typical + wd.allow.average + 6], up: true },
       { key: "strong", label: "Modern", sub: `holds ~${Math.round(wd.tn_typical + wd.allow.strong)} °C`, cuts: [wd.tn_typical + wd.allow.strong - 10, wd.tn_typical + wd.allow.strong, wd.tn_typical + wd.allow.strong + 6], up: true },
     ];
     const s = scales.find((x) => x.key === track)!;
@@ -581,8 +582,9 @@ function Zone({ seg, cid, place, km, wd, monthly, f, origin, onClose }: { seg: S
         >
           <Sparkles size={14} /> Explain it
         </button>
+        <ExpertButton tab="stats" indicator={trendInd} />
         {hz !== "rain" && (
-          <Link className="btn primary" to={hz === "heat" ? `/lab?air=${Math.round((here.rail ?? 57) - 17)}&track=${track === "weak" ? "repaired" : track === "average" ? "typical" : "modern"}` : `/lab?mode=cold&night=${here.tn ?? -8}`}>
+          <Link className="btn primary" to={hz === "heat" ? `/lab?air=${Math.round((here.rail ?? 57) - 17)}&track=${track === "weak" ? "repaired" : track === "average" ? "standard" : "modern"}` : `/lab?mode=cold&night=${here.tn ?? -8}`}>
             Try it in the lab <ArrowRight size={14} />
           </Link>
         )}

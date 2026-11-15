@@ -551,7 +551,7 @@ function Closed({ ctx, inds }: { ctx: Ctx; inds: string[] }) {
           onClick={async () => {
             const url = window.location.href.replace(/([?&])c=\d+/, "$1c=0");
             try {
-              if (navigator.share) await navigator.share({ title: `The ${ctx.place} case · OutOfSpec`, url });
+              if (navigator.share) await navigator.share({ title: `The ${ctx.place} case · Orbitrack`, url });
               else {
                 await navigator.clipboard.writeText(url);
                 setCopied(true);

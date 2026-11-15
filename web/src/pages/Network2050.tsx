@@ -214,16 +214,15 @@ export function NetworkPage() {
 
       <section className="card nf-card">
         <h2>Track by days at 40 °C a year</h2>
-        <p>Measured by NASA to 2025, then the climate models ({scenName}).</p>
+        <p>
+          Each year, Spain's {fmt(network.stacked.observed[0].reduce((a, b) => a + b, 0), 0)} km of track, coloured by how many days reached 40&nbsp;°C. Grey: none; the redder, the more days. On the right, a typical year around 2050 according to the climate models ({scenName}).
+        </p>
         <div className="nf-scroll" style={{ marginTop: 14 }}>
           <StackedArea
             classes={network.stacked.classes}
             years={network.stacked.years}
             observed={network.stacked.observed}
-            columns={[
-              { label: "1995– 2014", values: network.stacked.ref },
-              { label: "2041– 2060", values: network.stacked.future[`${scen}|2041-2060`] },
-            ]}
+            columns={[{ label: "2050", sub: "typical year", values: network.stacked.future[`${scen}|2041-2060`] }]}
           />
         </div>
       </section>

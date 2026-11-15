@@ -6,11 +6,11 @@ export function HelpDrawer({ open, onClose }: { open: boolean; onClose: () => vo
   return (
     <>
       <div className="scrim" onClick={onClose} role="presentation" />
-      <aside className="drawer" role="dialog" aria-label="How OutOfSpec works">
+      <aside className="drawer" role="dialog" aria-label="How Orbitrack works">
         <div className="head row" style={{ justifyContent: "space-between" }}>
           <div>
             <div className="eyebrow">How it works</div>
-            <h2 style={{ marginTop: 6, fontSize: 26 }}>OutOfSpec</h2>
+            <h2 style={{ marginTop: 6, fontSize: 26 }}>Orbitrack</h2>
           </div>
           <button className="round" onClick={onClose} aria-label="Close">
             <X size={16} />
@@ -18,7 +18,7 @@ export function HelpDrawer({ open, onClose }: { open: boolean; onClose: () => vo
         </div>
         <div className="body">
           <p>
-            Spain's railway was designed for the climate of the past. OutOfSpec reads 45 years of NASA Earth data along all 13,426 km of track and turns them into answers anyone can check: is it really getting hotter where my train runs,
+            Spain's railway was designed for the climate of the past. Orbitrack reads 45 years of NASA Earth data along all 13,426 km of track and turns them into answers anyone can check: is it really getting hotter where my train runs,
             could the track buckle, and what will it be like in 2050 — without exaggerating and without hiding the uncertainty.
           </p>
           <h3>Data</h3>

@@ -1,10 +1,11 @@
 import { lazy, Suspense } from "react";
 import { HashRouter, NavLink, Route, Routes, useLocation } from "react-router-dom";
-import { APP_NAME } from "./config";
+import { APP_NAME, APP_TAGLINE } from "./config";
 import { AskBar, AssistantProvider } from "./ai/AssistantContext";
-import { ErrorBoundary, Loading, Switch } from "./components/ui";
+import { ErrorBoundary, Loading } from "./components/ui";
 import { TourProvider } from "./components/Tour";
 import { ExpertDrawer } from "./components/ExpertDrawer";
+import { Logo } from "./components/Logo";
 import { FocusProvider, useFocus } from "./state/focus";
 import { HomePage } from "./pages/Home";
 
@@ -16,18 +17,9 @@ const JourneyPage = lazy(() => import("./pages/Journey").then((m) => ({ default:
 const MethodsPage = lazy(() => import("./pages/Methods").then((m) => ({ default: m.MethodsPage })));
 const ManagerPage = lazy(() => import("./pages/Manager").then((m) => ({ default: m.ManagerPage })));
 
-export function Logo() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
-      <path d="M3 17h18M3 21h18" stroke="#0c0d0f" strokeWidth="2" />
-      <path d="M5 13c3-8 6 2 14-8" fill="none" stroke="#d63a2f" strokeWidth="2.4" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 function Shell() {
   const { pathname } = useLocation();
-  const { expert, openExpert, closeExpert } = useFocus();
+  const { openExpert } = useFocus();
   const nav: [string, string, boolean?][] = [
     ["/", "Overview"],
     ["/watch", "Heat watch", true],
@@ -41,7 +33,7 @@ function Shell() {
       <header className="topbar">
         <div className="in">
           <NavLink to="/" className="brand">
-            <Logo /> {APP_NAME}
+            <Logo size={26} /> {APP_NAME}
           </NavLink>
           <nav className="nav" aria-label="Main">
             {nav.map(([to, label, live]) => (
@@ -53,7 +45,6 @@ function Shell() {
           </nav>
           <span className="spacer" />
           <AskBar />
-          <Switch on={expert.open} onChange={(v) => (v ? openExpert() : closeExpert())} label="Expert view" />
         </div>
       </header>
       <main>
@@ -76,9 +67,12 @@ function Shell() {
       </main>
       <footer className="footer">
         <div className="in">
+          <span className="foot-brand">
+            <Logo size={18} /> {APP_NAME} · {APP_TAGLINE}
+          </span>
           <span>NASA POWER (MERRA-2) · NASA NEX-GDDP-CMIP6 · NOAA · FRA · Open-Meteo forecast · © OpenStreetMap contributors · Natural Earth. Not an official NASA product.</span>
           <button className="btn ghost" style={{ padding: 0, minHeight: 0, color: "var(--ink-2)" }} onClick={() => openExpert("data")}>
-            Methods, tests &amp; data — Expert view
+            Expert details: methods, tests &amp; data
           </button>
         </div>
       </footer>

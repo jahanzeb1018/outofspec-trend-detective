@@ -384,7 +384,7 @@ function Closed({ t }: { t: T }) {
           onClick={async () => {
             const url = window.location.href.replace(/([?&])c=\d+/, "$1c=0");
             try {
-              if (navigator.share) await navigator.share({ title: `${t.route.name} · OutOfSpec`, url });
+              if (navigator.share) await navigator.share({ title: `${t.route.name} · Orbitrack`, url });
               else {
                 await navigator.clipboard.writeText(url);
                 setCopied(true);
