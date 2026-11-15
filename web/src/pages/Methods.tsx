@@ -267,7 +267,7 @@ export function MethodsPage() {
               {fmt(val.fra_t109.median_percentile, 0)}th percentile of local May–September days (median); {fmt(100 * val.fra_t109.share_above_p90, 0)}% were above the 90th percentile and{" "}
               {fmt(100 * val.fra_t109.share_above_p75, 0)}% above the 75th (by chance: 10% and 25%). A consistency check of the heat component, not a calibration. Source: {val.fra_t109.source}.
             </p>
-            <svg viewBox="0 0 420 150" className="chart" style={{ maxWidth: 520 }} role="img" aria-label="Histogram of the temperature percentile on derailment days">
+            <svg viewBox="0 0 420 140" className="chart" style={{ maxWidth: 520 }} role="img" aria-label="Histogram of the temperature percentile on derailment days">
               {val.fra_t109.histogram.map((c, i) => {
                 const m = Math.max(...val.fra_t109!.histogram);
                 const h = (110 * c) / m;
@@ -283,10 +283,10 @@ export function MethodsPage() {
                   </g>
                 );
               })}
-              <text x={30} y={148}>
-                percentile of the day's maximum temperature in the local May–September climate
-              </text>
             </svg>
+            <p className="tiny muted" style={{ maxWidth: 520 }}>
+              Each bar: derailments by percentile of the day's maximum temperature in the local May–September climate.
+            </p>
           </>
         )}
       </section>

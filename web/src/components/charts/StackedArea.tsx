@@ -3,6 +3,7 @@ import { area, stack } from "d3-shape";
 import { PALETTES } from "../../colors";
 import { fmt } from "../../config";
 import { DataTable } from "./DataTable";
+import { useWidth } from "./useWidth";
 
 interface Props {
   classes: string[];
@@ -17,11 +18,13 @@ const classLabel = (c: string) => (c === "0" ? "none" : c.startsWith(">") ? `ove
 
 /** One timeline: measured years as a stacked area, a divider, then typical-year bars from the models. */
 export function StackedArea({ classes, years, observed, columns }: Props) {
-  const W = 680;
-  const H = 300;
-  const m = { l: 52, r: 12, t: 44, b: 40 };
-  const colW = 64;
-  const gap = 40;
+  // drawn at the container's real width, so it fits a phone without sideways scrolling and text stays readable
+  const [ref, W] = useWidth<HTMLDivElement>(680);
+  const narrow = W < 520;
+  const H = narrow ? 250 : 300;
+  const m = { l: narrow ? 46 : 52, r: 12, t: 44, b: 40 };
+  const colW = narrow ? 46 : 64;
+  const gap = narrow ? 26 : 40;
   const areaR = W - m.r - columns.length * (colW + gap);
   const sepX = areaR + gap / 2;
   const total = Math.max(...observed.map((r) => r.reduce((a, b) => a + b, 0)), 1);
@@ -36,17 +39,17 @@ export function StackedArea({ classes, years, observed, columns }: Props) {
     .y1((d) => y(d[1]));
   const first = years[0];
   const last = years[years.length - 1];
-  const ticks = [first, ...[1990, 2000, 2010].filter((t) => t > first + 4 && t < last - 4), last];
+  const ticks = [first, ...(narrow ? [2000] : [1990, 2000, 2010]).filter((t) => t > first + 4 && t < last - 4), last];
   const head = { fontWeight: 700, fill: "var(--ink)", fontFamily: "inherit", fontSize: 12 } as const;
   return (
-    <div>
+    <div ref={ref}>
       <svg viewBox={`0 0 ${W} ${H}`} className="chart" role="img" aria-label={`Kilometres of track by number of days at or above 40 °C: measured each year ${first}–${last}, then ${columns.map((c) => `${c.label} (${c.sub})`).join(", ")}`}>
         <text x={m.l} y={14} style={head}>
-          Measured by NASA, year by year
+          {narrow ? "Measured, each year" : "Measured by NASA, year by year"}
         </text>
         {columns.length > 0 && (
           <text x={W - m.r} y={14} textAnchor="end" style={head}>
-            Climate models
+            {narrow ? "Models" : "Climate models"}
           </text>
         )}
         <text x={m.l - 6} y={m.t - 12} textAnchor="end">

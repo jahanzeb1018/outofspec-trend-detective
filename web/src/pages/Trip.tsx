@@ -219,6 +219,7 @@ export function TripPage() {
             { v: 20, label: "heavy 20 mm" },
             { v: 50, label: "washout 50 mm" },
           ];
+  const refLeft = !!focus && X(focus.km) > W / 2;
   const what = hz === "heat" ? "Rail temperature" : hz === "cold" ? "Coldest temperature" : "Rain";
   const unit = hz === "rain" ? "mm" : "°C";
   // Legend: what the solid and the dashed line mean (climate dates: median and 1-in-10, pipeline/trip_data.py).
@@ -302,7 +303,8 @@ export function TripPage() {
                   {refs.map((r) => (
                     <g key={r.v}>
                       <line x1={0} x2={W} y1={Y(r.v)} y2={Y(r.v)} stroke="#c9ccd2" strokeDasharray="4 5" />
-                      <text x={W - 4} y={Y(r.v) - 5} textAnchor="end" fontSize={12} fill="#646b76" fontFamily="Geist Mono, monospace" stroke="#fff" strokeWidth={4} paintOrder="stroke">
+                      {/* labels go on the side away from the highlighted point, so they never overlap its value */}
+                      <text x={refLeft ? 4 : W - 4} y={Y(r.v) - 5} textAnchor={refLeft ? "start" : "end"} fontSize={12} fill="#646b76" fontFamily="Geist Mono, monospace" stroke="#fff" strokeWidth={4} paintOrder="stroke">
                         {r.label}
                       </text>
                     </g>

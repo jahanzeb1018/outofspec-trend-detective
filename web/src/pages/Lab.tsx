@@ -214,7 +214,7 @@ export function LabPage() {
                   return (
                     <button key={k} aria-pressed={laid === k} onClick={() => setLaid(k)}>
                       <span>
-                        {name} <em>snaps ~{sgn(b)} °C</em>
+                        {name} <em>can snap at about {sgn(b)} °C</em>
                       </span>
                       <b style={{ color: l.c }}>{l.t}</b>
                     </button>

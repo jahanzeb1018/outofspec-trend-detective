@@ -201,7 +201,7 @@ export function AskBar() {
       }}
     >
       <Sparkles size={15} className="muted" aria-hidden />
-      <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask: “Is my train to Seville hot in July?”" aria-label="Ask a question" />
+      <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask: is my train hot in July?" aria-label="Ask a question" />
       <button type="submit">Ask</button>
     </form>
   );

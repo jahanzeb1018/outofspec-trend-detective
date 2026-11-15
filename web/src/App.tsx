@@ -1,5 +1,6 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { HashRouter, NavLink, Route, Routes, useLocation } from "react-router-dom";
+import { Menu, Sparkles, X } from "lucide-react";
 import { APP_NAME, APP_TAGLINE } from "./config";
 import { AskBar, AssistantProvider } from "./ai/AssistantContext";
 import { ErrorBoundary, Loading } from "./components/ui";
@@ -28,13 +29,28 @@ function Shell() {
     ["/network", "2050"],
     ["/how", "How it works"],
   ];
+  // Mobile: one compact row; the menu and the question box open as panels under it.
+  const [open, setOpen] = useState<null | "nav" | "ask">(null);
+  useEffect(() => setOpen(null), [pathname]);
+  const toggle = (w: "nav" | "ask") => {
+    setOpen((o) => (o === w ? null : w));
+    if (w === "ask") requestAnimationFrame(() => document.querySelector<HTMLInputElement>(".topbar .ask input")?.focus());
+  };
   return (
     <>
-      <header className="topbar">
+      <header className={`topbar${open ? ` open-${open}` : ""}`} onSubmitCapture={() => setOpen(null)}>
         <div className="in">
           <NavLink to="/" className="brand">
             <Logo size={26} /> {APP_NAME}
           </NavLink>
+          <div className="mob-actions">
+            <button type="button" className="mob-btn" aria-label="Ask a question" aria-expanded={open === "ask"} onClick={() => toggle("ask")}>
+              <Sparkles size={18} />
+            </button>
+            <button type="button" className="mob-btn" aria-label={open === "nav" ? "Close menu" : "Menu"} aria-expanded={open === "nav"} onClick={() => toggle("nav")}>
+              {open === "nav" ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
           <nav className="nav" aria-label="Main">
             {nav.map(([to, label, live]) => (
               <NavLink key={to} to={to} end={to === "/"} data-tour={to === "/watch" ? "watch-banner" : undefined} className={({ isActive }) => (isActive || (to === "/" && pathname === "/explore") ? "active" : "")}>

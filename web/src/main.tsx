@@ -16,6 +16,28 @@ Node.prototype.insertBefore = function <T extends Node>(this: Node, newNode: T, 
   return originalInsertBefore.call(this, newNode, referenceNode) as T;
 };
 
+// On phones every table.data is shown as one card per row (styles.css). Each cell needs its column's name for that,
+// so copy the header text into a data-label on every cell, for tables already on the page and any that appear later.
+function labelTables() {
+  for (const table of document.querySelectorAll<HTMLTableElement>("table.data")) {
+    const heads = [...table.querySelectorAll("thead th")].map((th) => th.textContent?.trim() ?? "");
+    if (!heads.length) continue;
+    for (const row of table.querySelectorAll("tbody tr"))
+      [...row.children].forEach((cell, i) => {
+        if (heads[i] && cell.getAttribute("data-label") !== heads[i]) cell.setAttribute("data-label", heads[i]);
+      });
+  }
+}
+let labelQueued = false;
+new MutationObserver(() => {
+  if (labelQueued) return;
+  labelQueued = true;
+  requestAnimationFrame(() => {
+    labelQueued = false;
+    labelTables();
+  });
+}).observe(document.body, { childList: true, subtree: true });
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />

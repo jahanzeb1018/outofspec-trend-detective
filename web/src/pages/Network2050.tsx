@@ -97,7 +97,7 @@ function Stripes({ years, km, fut }: { years: number[]; km: number[]; fut: numbe
   const [hover, setHover] = useState<number | null>(null);
   const H = W < 560 ? 70 : 96;
   const gap = W < 560 ? 10 : 18;
-  const futW = Math.max(56, W * 0.11);
+  const futW = Math.max(84, W * 0.11); // wide enough for its "typical year" label, so it never touches "2025"
   const sw = (W - gap - futW) / years.length;
   const tip = hover === null ? null : hover < 0 ? { x: W - futW / 2, t: `2050 (typical year): ${fmt(fut, 0)} km` } : { x: hover * sw + sw / 2, t: `${years[hover]}: ${fmt(km[hover], 0)} km` };
   return (
@@ -217,7 +217,7 @@ export function NetworkPage() {
         <p>
           Each year, Spain's {fmt(network.stacked.observed[0].reduce((a, b) => a + b, 0), 0)} km of track, coloured by how many days reached 40&nbsp;°C. Grey: none; the redder, the more days. On the right, a typical year around 2050 according to the climate models ({scenName}).
         </p>
-        <div className="nf-scroll" style={{ marginTop: 14 }}>
+        <div style={{ marginTop: 14 }}>
           <StackedArea
             classes={network.stacked.classes}
             years={network.stacked.years}

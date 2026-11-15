@@ -148,6 +148,14 @@ export function WatchPage() {
               <Play size={13} /> See a real heat watch: {withYear(replays.replays[latest].peak)}
             </button>
           )}
+          <div className="wt-mode-inline seg" role="group" aria-label="Mode">
+            <button aria-pressed={mode === "forecast"} onClick={() => switchMode("forecast")}>
+              Next 7 days
+            </button>
+            <button aria-pressed={mode === "replay"} onClick={() => switchMode("replay")}>
+              Past heatwaves
+            </button>
+          </div>
         </div>
 
         <div className="wt-mode seg" role="group" aria-label="Mode">

@@ -1,5 +1,5 @@
-import { createContext, memo, useContext, useEffect, useState, type CSSProperties, type ReactNode } from "react";
-import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { createContext, memo, useContext, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { ChevronLeft, ChevronRight, Maximize2, Minimize2, Pause, Play } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { RailScene } from "../components/RailScene";
 import { LogoMark } from "../components/Logo";
@@ -859,6 +859,23 @@ export function JourneyPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [step]);
 
+  // full screen (and landscape on phones that allow it): the drawings are read at a comfortable size
+  const stageRef = useRef<HTMLDivElement>(null);
+  const canFull = typeof document !== "undefined" && !!document.fullscreenEnabled;
+  const [full, setFull] = useState(false);
+  useEffect(() => {
+    const onChange = () => setFull(document.fullscreenElement === stageRef.current);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+  const toggleFull = () => {
+    if (document.fullscreenElement) return void document.exitFullscreen().catch(() => {});
+    stageRef.current
+      ?.requestFullscreen()
+      .then(() => (screen.orientation as unknown as { lock?: (o: string) => Promise<void> }).lock?.("landscape").catch(() => {}))
+      .catch(() => {});
+  };
+
   const st = STEPS[step];
   const beat = st.beats.reduce((cur, [at], i) => (t >= at * PACE ? i : cur), 0);
   return (
@@ -869,12 +886,21 @@ export function JourneyPage() {
       </div>
       <div className="jy-grid">
         <div style={{ minWidth: 0 }}>
-          <div className={`jy-stage${playing ? "" : " paused"}`}>
+          <div ref={stageRef} className={`jy-stage${playing ? "" : " paused"}`}>
             <ClockCtx.Provider value={t}>
               <div key={`${step}-${run}`} className="jy-scene">
                 <SceneView i={step} />
               </div>
             </ClockCtx.Provider>
+            {/* subtitle: only shown in full screen, where the narration box below the stage is out of view */}
+            <p className="jy-sub" aria-hidden>
+              {st.beats[beat][1]}
+            </p>
+            {canFull && (
+              <button type="button" className="jy-full" onClick={toggleFull} aria-label={full ? "Exit full screen" : "Watch full screen"} title={full ? "Exit full screen" : "Full screen"}>
+                {full ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+              </button>
+            )}
             <div className="jy-progress" aria-hidden>
               <i style={{ width: `${Math.min(100, (100 * t) / dur)}%` }} />
               {st.beats.slice(1).map(([at]) => (

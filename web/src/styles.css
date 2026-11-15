@@ -54,6 +54,21 @@ p { margin: 0; }
 .nav a.active { background: var(--soft-2); color: var(--ink); font-weight: 550; }
 .nav .live { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--heat-4); margin-right: 6px; vertical-align: 1px; animation: pulse 1.8s infinite; }
 .spacer { flex: 1; }
+.mob-actions { display: none; }
+/* Mobile header: one 52 px row (logo · ask · menu); the menu and the question box drop down as panels. */
+@media (max-width: 760px) {
+  .topbar .in { flex-wrap: nowrap; gap: 8px; padding: 6px 10px 6px 14px; min-height: 52px; }
+  .topbar .brand { font-size: 17px; }
+  .topbar .nav, .topbar .spacer, .topbar .ask { display: none; }
+  .mob-actions { display: flex; gap: 4px; margin-left: auto; }
+  .mob-btn { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 0; border-radius: 10px; background: transparent; color: var(--ink); cursor: pointer; }
+  .mob-btn[aria-expanded="true"] { background: var(--soft-2); }
+  .topbar.open-nav .nav { display: flex; flex-direction: column; flex-wrap: nowrap; gap: 2px; position: absolute; top: 100%; left: 0; right: 0; padding: 8px 10px 12px; background: #fff; border-bottom: 1px solid var(--line); box-shadow: 0 12px 24px rgba(16, 24, 40, 0.12); }
+  .topbar.open-nav .nav a { padding: 12px 14px; font-size: 16px; border-radius: 10px; }
+  .topbar.open-ask .ask { display: flex; position: absolute; top: calc(100% + 8px); left: 10px; right: 10px; min-width: 0; padding: 6px 6px 6px 14px; background: #fff; border: 1px solid var(--line-2); border-radius: 14px; box-shadow: 0 12px 24px rgba(16, 24, 40, 0.14); }
+  .topbar.open-ask .ask input { font-size: 16px; min-height: 40px; }
+  .topbar.open-ask .ask button { min-height: 38px; padding: 6px 14px; font-size: 14px; }
+}
 .wrap { max-width: 1240px; margin: 0 auto; padding: 0 32px; }
 .section { padding-top: 72px; }
 .eyebrow { font-family: var(--mono); font-size: 13px; color: var(--muted); }
@@ -141,6 +156,17 @@ table.data { width: 100%; border-collapse: collapse; font-size: 14px; font-varia
 table.data th, table.data td { padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
 table.data th { font-weight: 600; color: var(--ink-2); background: var(--soft); position: sticky; top: 0; }
 .table-wrap { overflow: auto; max-height: 420px; border: 1px solid var(--line); border-radius: 12px; }
+/* Phones: one card per row, each value under its column name (data-label, set in main.tsx); no sideways scrolling */
+@media (max-width: 680px) {
+  table.data thead { display: none; }
+  table.data, table.data tbody, table.data tr { display: block; width: 100%; }
+  table.data tr { padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  table.data td { display: grid; grid-template-columns: minmax(0, 38%) minmax(0, 1fr); gap: 10px; padding: 4px 0; border: 0; overflow-wrap: anywhere; }
+  table.data td::before { content: attr(data-label); color: var(--muted); font-size: 12.5px; line-height: 1.4; }
+  table.data td > * { grid-column: 2; } /* a cell's extra parts (e.g. "(Sevilla, 9 km)") stay in the value column */
+  table.data td:not([data-label]) { display: block; }
+  .table-wrap { overflow: visible; max-height: none !important; } /* no box-in-a-page scrolling: every card shows */
+}
 
 /* ---------- drawer ---------- */
 .scrim { position: fixed; inset: 0; background: rgba(12, 13, 15, 0.38); z-index: 60; animation: fade .2s ease; }
@@ -261,7 +287,6 @@ table.data th { font-weight: 600; color: var(--ink-2); background: var(--soft); 
   .hm-time .hm-proj { margin-left: auto; }
   .hm-year { bottom: 122px; }
   .hm-box .maplibregl-ctrl-top-left { display: none; }
-  .topbar { position: static; }
   .zone { position: fixed; z-index: 50; top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 80vh; border-radius: 18px 18px 0 0; }
 }
 .hm-counts { display: flex; flex-direction: column; gap: 3px; margin-top: 10px; font-size: 13.5px; color: var(--muted); }
@@ -397,8 +422,18 @@ button.dbar:hover { background: var(--soft); }
 .wt-map .hm-ticks span { white-space: nowrap; }
 .wt-map .hm-ticks span:last-child { transform: translateX(-100%); }
 .wt-map .hm-title p { max-width: 460px; }
-@media (max-width: 760px) { .wt-map .hm-title p { display: block; font-size: 13.5px; margin-top: 4px; } .wt-map .hm-year { bottom: 96px; } }
-@media (max-width: 760px) { .wt-map .hm-track { display: none; } .wt-map .hm-title .hm-next { margin-top: 52px; } }
+.wt-mode-inline { display: none; }
+@media (max-width: 760px) { .wt-map .hm-title p { display: block; font-size: 13.5px; margin-top: 4px; } .wt-map .hm-year { bottom: 104px; } }
+/* Mobile: the mode switch sits in the title column (no overlap); play button and day chips share one block. */
+@media (max-width: 760px) {
+  .wt-map .hm-track { display: none; }
+  .wt-map .hm-title .hm-next { margin-top: 10px; }
+  .wt-mode { display: none; }
+  .wt-mode-inline { display: inline-flex; pointer-events: auto; margin-top: 10px; box-shadow: var(--shadow); background: #fff; }
+  .wt-mode-inline button { padding: 6px 10px; font-size: 13px; min-height: 30px; }
+  .wt-map .hm-time { flex-wrap: nowrap; align-items: center; }
+  .wt-map .wt-days { flex: 1 1 auto; min-width: 0; }
+}
 
 /* ---------- trip: one date ---------- */
 .tp input[type="date"] { font: inherit; font-size: 15px; padding: 8px 10px; border: 1px solid var(--line-2); border-radius: 10px; background: #fff; color: var(--ink); min-height: 40px; }
@@ -439,6 +474,15 @@ button.dbar:hover { background: var(--soft); }
 .lab-tracks button[aria-pressed="true"] { border-color: var(--ink); background: #fafafa; }
 .lab-tracks em { font-style: normal; font-size: 12.5px; color: var(--muted); margin-left: 6px; }
 @media (max-width: 860px) { .lab-grid { grid-template-columns: 1fr; } .lab-pick button { padding: 7px 10px; } }
+/* Mobile: each formula stays on one line; its small labels wrap under the numbers instead of pushing the result down */
+@media (max-width: 560px) {
+  .lab-fx { flex-wrap: nowrap; padding: 12px 8px; gap: 4px; }
+  .lab-fx div { flex: 1 1 0; min-width: 0; }
+  .lab-fx em { white-space: normal; text-align: center; line-height: 1.25; }
+  .lab-fx b { font-size: 20px; }
+  .lab-fx .res b { font-size: 26px; }
+  .lab-tracks button { align-items: center; gap: 10px; }
+}
 
 /* ---------- the network in the future ---------- */
 .nf-hero { margin-top: 0; }
@@ -479,6 +523,8 @@ button.dbar:hover { background: var(--soft); }
 .la-say { font-size: 16px; line-height: 1.5; margin: 8px 0 6px; }
 .nf-rows2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; }
 @media (max-width: 960px) { .la-grid { grid-template-columns: minmax(0, 1fr); } .nf-rows2 { grid-template-columns: minmax(0, 1fr); } }
+/* Mobile: line names wrap instead of being cut with "…" */
+@media (max-width: 760px) { .nf-rows .nm em { white-space: normal; overflow: visible; } .nf-rows li { grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr) 44px; } }
 
 /* ---------- 2050 hero ---------- */
 .nh { margin-top: 0; padding: 40px 44px 26px; border-radius: 26px; background: #fbf7f1; border: 1px solid #f1e6d6; }
@@ -583,6 +629,18 @@ button.dbar:hover { background: var(--soft); }
 @keyframes jy-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
 @keyframes jy-spin { to { transform: rotate(360deg); } }
 @media (max-width: 980px) { .jy-grid { grid-template-columns: minmax(0, 1fr); } .jy-list { display: none; } }
+.jy-full { position: absolute; z-index: 5; top: 10px; right: 10px; width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 10px; background: rgba(255, 255, 255, 0.9); color: var(--ink); box-shadow: var(--shadow); cursor: pointer; }
+.jy-sub { display: none; }
+.jy-stage:fullscreen { border-radius: 0; border: 0; aspect-ratio: auto; width: 100vw; height: 100vh; background: #0c0d0f; }
+.jy-stage:fullscreen .jy-scene { inset: 0 0 64px 0; }
+.jy-stage:fullscreen .jy-sub { display: block; position: absolute; left: 0; right: 0; bottom: 8px; padding: 0 20px; text-align: center; color: #fff; font-size: clamp(14px, 2.4vw, 22px); line-height: 1.3; }
+/* Mobile: the film uses the whole width; the narration shows only what has been said (no empty space for what is coming) */
+@media (max-width: 680px) {
+  .jy-stage { margin: 0 -16px; border-radius: 0; border-left: 0; border-right: 0; }
+  .jy-cap { padding: 14px 16px; }
+  .jy-cap li { font-size: 16px; }
+  .jy-cap li.next { display: none; }
+}
 @media (prefers-reduced-motion: reduce) { .jy-flow, .jy-pulse, .jy-twinkle, .jy-spin { animation: none; } }
 .jy-orbit-a { animation: jy-orbit-a 16s linear both; }
 .jy-orbit-b { animation: jy-orbit-b 20s linear both; }

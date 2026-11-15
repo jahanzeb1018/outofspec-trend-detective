@@ -88,7 +88,9 @@ export function LineAgeChart({ rows, conv, era, selected, onSelect }: { rows: Li
   // labels: the hottest lines and the selected one, skipping any that would collide
   const placed: { x0: number; x1: number; y: number }[] = [];
   const labels = new Map<string, { x: number; y: number; anchor: "start" | "end" }>();
+  const maxLabels = W < 560 ? 4 : Infinity; // a phone has room for the selected line and the three hottest
   for (const r of [...rows].sort((a, b) => (b.line === selected ? 1 : 0) - (a.line === selected ? 1 : 0) || b.fut - a.fut)) {
+    if (labels.size >= maxLabels) break;
     const cx = x(r.year);
     const cy = y(r.fut);
     const w = r.short.length * 6.6;
