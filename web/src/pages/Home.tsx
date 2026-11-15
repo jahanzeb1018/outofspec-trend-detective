@@ -236,7 +236,8 @@ export function HomePage() {
               <>
                 <input type="range" min={0} max={n - 1} value={Math.min(f, n - 1)} onChange={(e) => (setPlaying(false), setF(Number(e.target.value)))} aria-label="Month" />
                 <div className="hm-ticks">
-                  {yearTicks.map((y) => (
+                  {/* with the side panel open the bar is short: first and last year only, so the labels never overlap */}
+                  {(cid && !narrow ? [Y0, lastYear] : yearTicks).map((y) => (
                     <span key={y} style={{ left: `${((y === lastYear ? n - 1 : (y - Y0) * 12) / Math.max(1, n - 1)) * 100}%` }}>{y}</span>
                   ))}
                 </div>

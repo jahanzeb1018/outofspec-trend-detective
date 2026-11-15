@@ -88,7 +88,10 @@ Live demo: https://orbitrack-app.vercel.app (also https://outofspec-trend-detect
 
 Code: MIT (`LICENSE`). Data: see `DATA_LICENSES.md` (NASA open data, OpenStreetMap ODbL, Natural Earth public domain, NOAA and FRA public domain, Open-Meteo CC BY 4.0). Not an official NASA product.
 
-## Team to-do before submitting
+## Use of Super Intelligence (SI)
 
-* Optional: Giovanni cross-check (Earthdata login), deploy the AI proxy.
-* Complete `SUBMISSION.md` (form texts, honest SI disclosure) and record the ≤ 30 s video.
+Anthropic's Claude helped with code, data processing and wording; the idea, design, scientific choices and checks are the team's. Every number in the app is computed by the open pipeline from NASA data. Full account: `SI_DISCLOSURE.md`.
+
+## Team and submission
+
+Team MJM: Maheen Asad (data engineering & impact) and Jahanzeb Raja Mohammad (science & software). NASA Space Apps Challenge 2026, “Be an Earth System Trend Detective!”. The texts submitted on the Space Apps form are in `SUBMISSION.md`.
