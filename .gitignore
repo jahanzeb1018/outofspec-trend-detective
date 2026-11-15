@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+pipeline/cache/
+pipeline/validate/giovanni/*.csv
+web/node_modules/
+web/dist/
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+deploy/
+*.tsbuildinfo
