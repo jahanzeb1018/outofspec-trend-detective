@@ -3,19 +3,20 @@
 > Fill every ⚠️ before submitting. Submit with hours of margin; test every link in a private window.
 
 ## 1. Project name
-⚠️ Team decision (working name: **OutOfSpec**). Change it in `web/src/config.ts`, `web/index.html` and `README.md`.
+**OutOfSpec**
 
 ## 2. High-level project summary
-[Name] is a data-detective tool that finds where Earth's climate is trending away from what our infrastructure was designed for. Anyone can pick a NASA variable and a place and get a 45-year time series with its rate of change and statistical significance (Sen's slope with confidence interval, Mann-Kendall with autocorrelation correction, t-test, and false-discovery correction for maps). Our flagship case is Spain's 13,000-km railway network: using NASA POWER/MERRA-2 we map where days above 40 °C are rising and frost is falling, show what that means for your trip, estimate rail temperature, compute an FRA-based thermal safety margin under user-defined track assumptions, and project it to 2050 and 2100 with NASA NEX-GDDP-CMIP6. We validated the data against weather stations and the heat signal against 262 real buckled-track derailments.
+OutOfSpec is a trend detective for Spain's 13,426-km railway, a network built for a climate that no longer exists. With 45 years of daily NASA POWER / MERRA-2 data for the 159 NASA grid squares the railway crosses, it shows month by month where the track was in trouble from heat, frost or downpours, and for every area tests whether the trend is real (Sen's slope, Mann-Kendall with the Hamed–Rao correction, t-test, false-discovery correction). It turns air temperature into rail temperature and an FRA-based buckling margin, runs a live 7-day heat watch, answers "what about my trip?" for any date from 1981 to 2100, and projects the network to 2050 with six NASA NEX-GDDP-CMIP6 climate models. We validated NASA's temperatures against 10 NOAA stations (r = 0.97) and the heat signal against 262 real buckled-track derailments.
 
 ## 3. Link to project demo
 ⚠️ 30-second video (YouTube/Drive, public) or ≤ 7 slides.
 
 ## 4. Link to final project
-⚠️ GitHub Pages URL + repository URL.
+* Live app: https://outofspec-trend-detective.vercel.app
+* Code, data and docs: https://github.com/jahanzeb1018/outofspec-trend-detective
 
 ## 5. Detailed description (outline)
-1. **What it does** — Detective mode for any place on Earth; Railways explorer (Now / Trend / Future, FDR before/after); My trip; Does it hold? (FRA buckling lab); The network in 2050; Methods; Manager mode; optional SI assistant.
+1. **What it does** — Overview: the network month by month since 1981, click any line for the drawn track, a danger meter per track condition and "Is the trend real?"; And in the future? (days at 40 °C by city to 2090); Heat watch (next 7 days and past heatwaves); My trip (any date 1981–2100: measured, forecast or projected climate); Track lab (the two formulas as an experiment); 2050 (heat stripes, older lines vs hotter places); How it works (the data journey as an animation); Methods; optional SI assistant.
 2. **How it works** — Python pipeline (NASA POWER per MERRA-2 cell, NEX-GDDP-CMIP6 through the NCCS subset service, OpenStreetMap network, NOAA stations, FRA accidents) → indicators → statistics → models → JSON → static React site. The same statistics run in the browser (parity-tested).
 3. **Benefits** — students learn to detect and test trends; travellers see their journey; infrastructure managers get a ready-to-use screening tool that accepts their internal data locally.
 4. **Validation** — 10 NOAA GHCN-Daily stations (daily r 0.95–0.99), climate models vs observations 1981–2014, 262 FRA T109 derailments (40% above the local 90th percentile of max temperature), Giovanni workflow.
@@ -45,7 +46,7 @@ SI tools ([name them, e.g. Anthropic Claude]) were used for: [literature search 
 | 2–5 | Home map turning red 1981 → 2081 | Title + tagline |
 | 5–13 | Click Sevilla: past + future chart, FDR stippling | "45 years of NASA data: real, significant change" |
 | 13–23 | Lab: slider to “recently tamped”, the track bends; neutral-temperature window | "What it means for the track — today and in 2050" |
-| 23–28 | Ask the detective turns a question into a map | "Any place, any NASA variable" |
+| 23–28 | How it works: from the satellite to the screen | "NASA data, tested, checked against reality" |
 | 28–30 | Tagline | — |
 
 ## 10. Seven slides
