@@ -37,7 +37,7 @@ function Shell() {
           </NavLink>
           <nav className="nav" aria-label="Main">
             {nav.map(([to, label, live]) => (
-              <NavLink key={to} to={to} end={to === "/"} className={({ isActive }) => (isActive || (to === "/" && pathname === "/explore") ? "active" : "")}>
+              <NavLink key={to} to={to} end={to === "/"} data-tour={to === "/watch" ? "watch-banner" : undefined} className={({ isActive }) => (isActive || (to === "/" && pathname === "/explore") ? "active" : "")}>
                 {live && <span className="live" aria-hidden />}
                 {label}
               </NavLink>

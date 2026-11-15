@@ -5,7 +5,6 @@ import { SpainMap } from "../components/SpainMap";
 import { RailScene, type Hazard } from "../components/RailScene";
 import { fmt, signed } from "../config";
 import { useCell, useJson, useSegments, useSummary } from "../data/load";
-import { useWatch, worstByCell } from "../data/forecast";
 import type { SegmentProps } from "../data/types";
 import type { WatchData } from "../model/watch";
 import { useAssistant } from "../ai/AssistantContext";
@@ -31,7 +30,8 @@ const Y0 = 1981;
 const LIM = { heat: 60, cold: -7, rain: 50 };
 const HZ_COLOR: Record<Hazard, string> = { heat: "#d63a2f", cold: "#2563eb", rain: "#0d9488" };
 const HZ_LABEL: Record<Hazard, string> = { heat: "Rail above 60 °C", cold: "Severe frost (−7 °C or colder)", rain: "Downpour (50 mm or more in a day)" };
-const MS = 85;
+const MS = 85; // measured years: one month per step
+const PROJ_MS = 500; // a projected typical year (12 months) plays slowly enough to follow each month
 /** Pull on a welded rail per °C below its stress-free temperature (UIC60, from the pipeline), and the cold rail-break reference. */
 const TENSION_KN_PER_C = 18.56;
 const BREAK_AT = -10;
@@ -79,7 +79,6 @@ export function HomePage() {
   const { data: monthly } = useJson<Monthly>("monthly.json");
   const { data: cellsFc } = useJson<CellsFC>("cells.geojson");
   const { data: wd } = useJson<WatchData>("watch.json");
-  const watch = useWatch();
   const info = useMemo(() => new Map((cellsFc?.features ?? []).map((f) => [f.properties.c, f.properties])), [cellsFc]);
   const totalKm = useMemo(() => [...info.values()].reduce((s, c) => s + c.km, 0), [info]);
 
@@ -89,30 +88,54 @@ export function HomePage() {
   const [playing, setPlaying] = useState(true);
   const [fast, setFast] = useState(false);
   const stopAt = useRef(-1); // the first run stops at Dec 2025; play again continues into the projected years
+  const inProj = f >= n;
   useEffect(() => {
     if (!playing || !monthly) return;
     if (stopAt.current < 0) stopAt.current = n - 1;
+    // measured years: 1 or 3 months per step; a projected year: always month by month, 3× just shortens the step
+    const stepBy = inProj ? 1 : fast ? 3 : 1;
+    const every = inProj ? (fast ? PROJ_MS / 3 : PROJ_MS) : MS;
     const t = setInterval(() => {
       setF((x) => {
         if (x >= stopAt.current) {
           setPlaying(false);
           return x;
         }
-        return Math.min(stopAt.current, x + (fast ? 3 : 1));
+        return Math.min(stopAt.current, x + stepBy);
       });
-    }, MS);
+    }, every);
     return () => clearInterval(t);
-  }, [playing, monthly, n, fast]);
+  }, [playing, monthly, n, fast, inProj]);
+  const fr = frameOf(f, n);
+  // where the measured timeline was, to come back to it from a projected year
+  const lastObs = useRef(n - 1);
+  if (fr.obs) lastObs.current = f;
+  const projBase = (y: number) => indexOf(y, 0, n); // January of the typical year 2050 or 2090
+
   const play = () => {
     if (playing) return setPlaying(false);
-    if (f >= total - 1) {
-      setF(0);
-      stopAt.current = n - 1;
-    } else stopAt.current = f >= n - 1 ? total - 1 : n - 1;
+    if (fr.obs) {
+      // measured years play to the last month; from the last month, play on into 2050 and 2090
+      stopAt.current = f >= n - 1 ? total - 1 : n - 1;
+    } else {
+      // a projected typical year plays to its December, restarting from January when already there
+      const base = projBase(fr.year);
+      if (f >= base + 11) setF(base);
+      stopAt.current = base + 11;
+    }
     setPlaying(true);
   };
-
-  const fr = frameOf(f, n);
+  /** 2050 / 2090: show the whole typical year, from January to December (not the month of the measured years). */
+  const showYear = (y: number) => {
+    const base = projBase(y);
+    setF(base);
+    stopAt.current = base + 11;
+    setPlaying(true);
+  };
+  const showMeasured = () => {
+    setPlaying(false);
+    setF(Math.min(lastObs.current, n - 1));
+  };
   const frame = useMemo(() => {
     if (!monthly) return null;
     const colors: Record<string, string> = {};
@@ -160,14 +183,6 @@ export function HomePage() {
   const narrow = typeof window !== "undefined" && window.innerWidth < 760;
   const pad = narrow ? 16 : cid ? { top: 70, bottom: 150, left: 40, right: 470 } : { top: 120, bottom: 150, left: 40, right: 40 };
 
-  const worst = useMemo(() => (watch.data ? worstByCell(watch.data.days) : null), [watch.data]);
-  const watchKm = useMemo(() => {
-    if (!worst) return null;
-    let k = 0;
-    for (const [c, w] of Object.entries(worst)) if (w.status === "heat-watch" || w.status === "heat-warning") k += info.get(c)?.km ?? 0;
-    return k;
-  }, [worst, info]);
-
   const lastYear = Y0 + Math.floor((n - 1) / 12);
   const yearTicks = [1981, 1990, 2000, 2010, lastYear];
   const lastDay = monthly?.last_day ? new Date(monthly.last_day + "T12:00:00") : null;
@@ -181,9 +196,6 @@ export function HomePage() {
         <div className="hm-title">
           <h1>Spain's railway, month by month.</h1>
           <p>Lines show each month's typical afternoon temperature. Pulsing dots mark where the track was in trouble: heat, frost or a downpour. NASA data, January 1981 to {lastDayLabel}.</p>
-          <Link to="/watch" className="hm-pill" data-tour="watch-banner">
-            <span className="live" aria-hidden /> {watchKm === null ? "Heat watch · next 7 days" : watchKm > 0 ? `Heat watch: ${fmt(watchKm, 0)} km this week` : "Heat watch: all clear this week"} <ArrowRight size={13} />
-          </Link>
           <button className="hm-pill hm-next" onClick={() => document.getElementById("future")?.scrollIntoView({ behavior: "smooth", block: "start" })}>
             The future: 2050 and 2090 <ArrowDown size={13} />
           </button>
@@ -220,16 +232,32 @@ export function HomePage() {
             {fast ? "3×" : "1×"}
           </button>
           <div className="hm-track">
-            <input type="range" min={0} max={n - 1} value={Math.min(f, n - 1)} onChange={(e) => (setPlaying(false), setF(Number(e.target.value)))} aria-label="Month" />
-            <div className="hm-ticks">
-              {yearTicks.map((y) => (
-                <span key={y} style={{ left: `${((y === lastYear ? n - 1 : (y - Y0) * 12) / Math.max(1, n - 1)) * 100}%` }}>{y}</span>
-              ))}
-            </div>
+            {fr.obs ? (
+              <>
+                <input type="range" min={0} max={n - 1} value={Math.min(f, n - 1)} onChange={(e) => (setPlaying(false), setF(Number(e.target.value)))} aria-label="Month" />
+                <div className="hm-ticks">
+                  {yearTicks.map((y) => (
+                    <span key={y} style={{ left: `${((y === lastYear ? n - 1 : (y - Y0) * 12) / Math.max(1, n - 1)) * 100}%` }}>{y}</span>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <input type="range" min={0} max={11} value={fr.m} onChange={(e) => (setPlaying(false), setF(indexOf(fr.year, Number(e.target.value), n)))} aria-label={`Month of a typical year in ${fr.year}`} />
+                <div className="hm-ticks">
+                  {[0, 3, 6, 9, 11].map((m) => (
+                    <span key={m} style={{ left: `${(m / 11) * 100}%` }}>{m === 0 ? `${MON[m]} ${fr.year}` : MON[m]}</span>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
-          <div className="hm-proj" role="group" aria-label="Projections: a typical year">
+          <div className="hm-proj" role="group" aria-label="Period">
+            <button className="obs" aria-pressed={fr.obs} onClick={showMeasured} title="Measured by NASA, month by month">
+              {Y0}–{lastYear}
+            </button>
             {[2050, 2090].map((y) => (
-              <button key={y} aria-pressed={!fr.obs && fr.year === y} onClick={() => (setPlaying(false), setF(indexOf(y, fr.m, n)))}>
+              <button key={y} aria-pressed={!fr.obs && fr.year === y} onClick={() => showYear(y)} title={`A typical year around ${y}, January to December (climate models)`}>
                 {y}
               </button>
             ))}

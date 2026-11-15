@@ -228,6 +228,8 @@ table.data th { font-weight: 600; color: var(--ink-2); background: var(--soft); 
 .hm-proj { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
 .hm-proj button { border: 1px solid #fed7aa; background: #fff7ed; color: #c2410c; border-radius: 999px; padding: 4px 10px; font-family: var(--mono); font-size: 12.5px; font-weight: 700; cursor: pointer; }
 .hm-proj button[aria-pressed="true"] { background: #c2410c; border-color: #c2410c; color: #fff; }
+.hm-proj button.obs { border-color: var(--line-2); background: #fff; color: var(--ink-2); }
+.hm-proj button.obs[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
 .hm-proj span { font-size: 11px; color: var(--muted); margin-left: 4px; }
 .hm-box .maplibregl-ctrl-top-left { top: 64px; left: auto; right: 10px; }
 .hm-legend { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--ink-2); white-space: nowrap; }
@@ -254,7 +256,10 @@ table.data th { font-weight: 600; color: var(--ink-2); background: var(--soft); 
   .hm-year .y { font-size: 46px; }
   .hm-counts { font-size: 12px; margin-top: 6px; }
   .hm-ticks span:not(:first-child):not(:last-child) { display: none; }
-  .hm-time { left: 8px; right: 8px; bottom: 8px; gap: 10px; padding: 10px 12px; }
+  .hm-time { left: 8px; right: 8px; bottom: 8px; gap: 10px; padding: 10px 12px; flex-wrap: wrap; row-gap: 8px; }
+  .hm-time .hm-track { order: 10; flex: 1 1 100%; } /* the slider gets its own full-width row under the buttons */
+  .hm-time .hm-proj { margin-left: auto; }
+  .hm-year { bottom: 122px; }
   .hm-box .maplibregl-ctrl-top-left { display: none; }
   .topbar { position: static; }
   .zone { position: fixed; z-index: 50; top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 80vh; border-radius: 18px 18px 0 0; }
